@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
+using System.Collections.Generic;
 
-public class LibraryUI : MonoBehaviour
+public class LibraryManager : MonoBehaviour
 {
     public Text resultText;
     private Library library;
@@ -42,11 +43,11 @@ public class LibraryUI : MonoBehaviour
         if (book != null && book.CopyCount > book.BorrowedCopyCount)
         {
             book.BorrowedCopyCount++;
-            DisplayResult($"{book.Title} borrowed successfully.");
+            DisplayResult($"{book.Title} borrowed successfully.", new List<Book> { book }); // Tek bir kitap listesi ile çağrıldı.
         }
         else
         {
-            DisplayResult("Book could not be borrowed. Either there is not enough stock or the book is not found.");
+            DisplayResult("Book could not be borrowed. Either there is not enough stock or the book is not found.", new List<Book>());
         }
     }
 
@@ -57,11 +58,11 @@ public class LibraryUI : MonoBehaviour
         if (book != null && book.BorrowedCopyCount > 0)
         {
             book.BorrowedCopyCount--;
-            DisplayResult($"{book.Title} returned successfully.");
+            DisplayResult($"{book.Title} returned successfully.", new List<Book> { book }); // Tek bir kitap listesi ile çağrıldı.
         }
         else
         {
-            DisplayResult("Book could not be returned. No borrowed copies found.");
+            DisplayResult("Book could not be returned. No borrowed copies found.", new List<Book>());
         }
     }
 
