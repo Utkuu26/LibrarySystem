@@ -1,83 +1,72 @@
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 using System.Linq;
 using System.Collections.Generic;
 
 public class LibraryManager : MonoBehaviour
 {
-    public Text resultText;
-    private Library library;
+    public TMP_Text availableBooksText;
+    public TMP_Text borrowedBooksText;
 
-    private void Start()
+    private Library library;
+    private List<Book> availableBooks;
+    private List<Book> borrowedBooks;
+
+    void Start()
     {
         library = new Library();
-        // Add test data
+        // Test verileri ekle
         library.AddBook(new Book("Book 1", "Author 1", "ISBN1", 5));
         library.AddBook(new Book("Book 2", "Author 2", "ISBN2", 3));
         library.AddBook(new Book("Book 3", "Author 3", "ISBN3", 8));
 
-        // Perform sample operations
-        ListAllBooks();
-        SearchBooks("Author 2");
-        BorrowBook("ISBN1");
-        ReturnBook("ISBN1");
-        ListOverdueBooks();
+        // Ödünç alınmamış kitapları listele
+        ListAvailableBooks();
     }
 
-    public void ListAllBooks()
+    public void ListAvailableBooks()
     {
-        var books = library.GetAllBooks();
-        DisplayResult("All Books:", books);
+        availableBooks = library.GetAllBooks();
+        UpdateAvailableBooksText("Available Books:", availableBooks);
     }
 
-    public void SearchBooks(string keyword)
+    public void ListBorrowedBooks()
     {
-        var searchResults = library.GetAllBooks().Where(book => book.Author.Contains(keyword) || book.Title.Contains(keyword)).ToList();
-        DisplayResult($"Search Results ({keyword}):", searchResults);
+        borrowedBooks = library.GetAllBooks().Where(book => book.BorrowedCopyCount > 0).ToList();
+        UpdateBorrowedBooksText("Borrowed Books:", borrowedBooks);
     }
 
     public void BorrowBook(string isbn)
     {
-        var book = library.GetAllBooks().FirstOrDefault(b => b.ISBN == isbn);
+        var book = availableBooks.FirstOrDefault(b => b.ISBN == isbn);
 
         if (book != null && book.CopyCount > book.BorrowedCopyCount)
         {
             book.BorrowedCopyCount++;
-            DisplayResult($"{book.Title} borrowed successfully.", new List<Book> { book }); // Tek bir kitap listesi ile çağrıldı.
-        }
-        else
-        {
-            DisplayResult("Book could not be borrowed. Either there is not enough stock or the book is not found.", new List<Book>());
+            ListAvailableBooks(); // Ödünç alındıktan sonra ödünç alınmamış kitapları güncelle
+            ListBorrowedBooks(); // Ödünç alındıktan sonra ödünç alınan kitapları güncelle
         }
     }
 
-    public void ReturnBook(string isbn)
+    private void UpdateAvailableBooksText(string header, List<Book> books)
     {
-        var book = library.GetAllBooks().FirstOrDefault(b => b.ISBN == isbn);
-
-        if (book != null && book.BorrowedCopyCount > 0)
-        {
-            book.BorrowedCopyCount--;
-            DisplayResult($"{book.Title} returned successfully.", new List<Book> { book }); // Tek bir kitap listesi ile çağrıldı.
-        }
-        else
-        {
-            DisplayResult("Book could not be returned. No borrowed copies found.", new List<Book>());
-        }
-    }
-
-    public void ListOverdueBooks()
-    {
-        var overdueBooks = library.GetAllBooks().Where(book => book.BorrowedCopyCount > 0).ToList();
-        DisplayResult("Overdue Books:", overdueBooks);
-    }
-
-    private void DisplayResult(string header, List<Book> books)
-    {
-        resultText.text = $"{header}\n";
+        availableBooksText.text = $"{header}\n";
         foreach (var book in books)
         {
-            resultText.text += $"{book.Title} - {book.Author} - {book.ISBN} - Copies: {book.CopyCount} - Borrowed: {book.BorrowedCopyCount}\n";
+            availableBooksText.text += $"{book.Title} - {book.Author} - {book.ISBN} - Copies: {book.CopyCount} - Borrowed: {book.BorrowedCopyCount}\n";
+            // Eğer kitap tıklanabilir olacaksa, bir düğme ekleyebilir ve bu düğmeye bir tıklama işleyici (event handler) ekleyebilirsiniz.
+            // Örneğin:
+            // availableBooksText.text += $"<color=blue><u><b><size=12>{book.Title}</size></b></u></color> - {book.Author} - {book.ISBN} - Copies: {book.CopyCount} - Borrowed: {book.BorrowedCopyCount} <color=green><u><b><size=12>(Borrow)</size></b></u></color>\n";
+            // Burada "Borrow" düğmesine bir tıklama işleyici ekleyerek ödünç alma işlemini gerçekleştirebilirsiniz.
+        }
+    }
+
+    private void UpdateBorrowedBooksText(string header, List<Book> books)
+    {
+        borrowedBooksText.text = $"{header}\n";
+        foreach (var book in books)
+        {
+            borrowedBooksText.text += $"{book.Title} - {book.Author} - {book.ISBN} - Copies: {book.CopyCount} - Borrowed: {book.BorrowedCopyCount}\n";
         }
     }
 }
