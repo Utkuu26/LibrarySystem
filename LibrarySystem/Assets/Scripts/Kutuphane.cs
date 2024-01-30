@@ -9,6 +9,7 @@ public class Kutuphane : MonoBehaviour
     public GameObject kitapBilgiPanel;
     public TextMeshProUGUI kitapBilgiText;
     public TextMeshProUGUI kitapBilgiHataText;
+    public TextMeshProUGUI borrowedBooksText;
 
     void Start()
     {
@@ -45,9 +46,9 @@ public class Kutuphane : MonoBehaviour
             if (bulunanKitaplar.Count > 0)
             {
                 kitapBilgiPanel.SetActive(true);
-                kitapBilgiHataText.text = ""; 
+                kitapBilgiHataText.text = "";
                 Kitap ilkBulunanKitap = bulunanKitaplar[0];
-                kitapBilgiText.text = $"Başlık: {ilkBulunanKitap.Baslik}\nYazar: {ilkBulunanKitap.Yazar}\nISBN: {ilkBulunanKitap.ISBN}\nKopya Sayısı: {ilkBulunanKitap.KopyaSayisi}\nÖdünç Alınan Kopyalar: {ilkBulunanKitap.OduncAlinanKopyalar}";
+                kitapBilgiText.text = $"Başlık: {ilkBulunanKitap.Baslik}\nYazar: {ilkBulunanKitap.Yazar}\nISBN: {ilkBulunanKitap.ISBN}\n";
             }
             else
             {
@@ -57,13 +58,14 @@ public class Kutuphane : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Kitap Bilgi Paneli atanmamis");
+            Debug.LogError("Kitap Bilgi Paneli atanmamış");
         }
     }
 
     public void KitapEkle(Kitap yeniKitap)
     {
         kitaplar.Add(yeniKitap);
+        TumKitaplariListele();
     }
 
     public void TumKitaplariListele()
@@ -85,18 +87,23 @@ public class Kutuphane : MonoBehaviour
         }
     }
 
-    public void KitapOduncAl(string isbn)
+    public bool KitapOduncAlVeGoster(string kitapBaslik)
     {
-        var kitap = kitaplar.Find(k => k.ISBN == isbn);
+        var kitap = kitaplar.Find(k => k.Baslik == kitapBaslik);
 
-        if (kitap != null && kitap.KopyaSayisi > kitap.OduncAlinanKopyalar)
+        if (kitap != null && kitap.KopyaSayisi - kitap.OduncAlinanKopyalar > 0)
         {
             kitap.OduncAlinanKopyalar++;
             Debug.Log($"{kitap.Baslik} kitabı ödünç alındı.");
+
+            // Ödünç alındığında borrowedBooksText'i güncelle
+            UpdateBorrowedBooksText();
+            return true;
         }
         else
         {
-            Debug.Log("Kitap ödünç alınamadı. Stokta yeterli kopya yok veya kitap bulunamadı.");
+            Debug.Log($"{kitap.Baslik} kitabının ödünç alınacak yeterli kopyası bulunmamaktadır.");
+            return false;
         }
     }
 
@@ -115,21 +122,37 @@ public class Kutuphane : MonoBehaviour
         }
     }
 
-    public void GecikmisKitaplar()
+    public void UpdateBorrowedBooksText()
     {
-        var gecikmisKitaplar = kitaplar.FindAll(k => k.OduncAlinanKopyalar > 0);
+        string borrowedBooks = "";
 
-        if (gecikmisKitaplar.Count > 0)
+        foreach (var kitap in kitaplar)
         {
-            Debug.Log("Gecikmiş Kitaplar:");
-            foreach (var kitap in gecikmisKitaplar)
+            if (kitap.OduncAlinanKopyalar > 0)
             {
-                Debug.Log($"Başlık: {kitap.Baslik}, Yazar: {kitap.Yazar}, ISBN: {kitap.ISBN}, Kopya Sayısı: {kitap.KopyaSayisi}, Ödünç Alınan Kopyalar: {kitap.OduncAlinanKopyalar}");
+                borrowedBooks += $"{kitap.Baslik} - {kitap.OduncAlinanKopyalar} adet\n";
             }
+        }
+
+        if (borrowedBooksText != null)
+        {
+            borrowedBooksText.text = borrowedBooks;
         }
         else
         {
-            Debug.Log("Gecikmiş kitap bulunmamaktadır.");
+            Debug.LogError("BorrowedBooksText atanmamış.");
         }
     }
+
+    public bool KitapKalmadiMi()
+{
+    foreach (var kitap in kitaplar)
+    {
+        if (kitap.KopyaSayisi > kitap.OduncAlinanKopyalar)
+        {
+            return false; // Hala ödünç alınacak kitap var
+        }
+    }
+    return true; // Ödünç alınacak kitap kalmadı
+}
 }

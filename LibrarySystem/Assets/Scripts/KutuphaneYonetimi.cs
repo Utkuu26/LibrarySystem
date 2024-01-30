@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class KutuphaneYonetimi : MonoBehaviour
@@ -8,6 +9,8 @@ public class KutuphaneYonetimi : MonoBehaviour
     public GameObject kitapBilgiPanel;
     public TextMeshProUGUI kitapBilgiText;
     public TextMeshProUGUI kitapBilgiHataText;
+    public GameObject borrowBtn;
+    public GameObject notEnoughText;
 
     void Start()
     {
@@ -35,19 +38,10 @@ public class KutuphaneYonetimi : MonoBehaviour
             {
                 Debug.LogError("Arama InputField'ı atanmamış. Lütfen Unity Editor'da Arama InputField alanını bağladığınızdan emin olun.");
             }
-
-            // Kitap ödünç al
-            kutuphane.KitapOduncAl("111");
-
-            // Kitap iade et
-            kutuphane.KitapIadeEt("111");
-
-            // Gecikmiş kitapları görüntüle
-            kutuphane.GecikmisKitaplar();
         }
         else
         {
-            //Debug.LogError("Kutuphane nesnesi atanmamış. Lütfen Unity Editor'da Kutuphane alanını bağladığınızdan emin olun.");
+            Debug.LogError("Kutuphane nesnesi atanmamış. Lütfen Unity Editor'da Kutuphane alanını bağladığınızdan emin olun.");
         }
     }
 
@@ -63,4 +57,53 @@ public class KutuphaneYonetimi : MonoBehaviour
             Debug.LogError("Kutuphane nesnesi atanmamış. Lütfen Unity Editor'da Kutuphane alanını bağladığınızdan emin olun.");
         }
     }
+
+    public void BorrowButtonClick()
+    {
+        if (kutuphane != null)
+        {
+            // Arama input field'ındaki değeri al
+            string aramaKelimesi = aramaInputField.text;
+
+            // Arama yap ve ilk bulunan kitabı al
+            var bulunanKitaplar = kutuphane.KitapAra(aramaKelimesi);
+
+            if (bulunanKitaplar.Count > 0)
+            {
+                // İlk bulunan kitabı al ve ödünç al
+                Kitap ilkBulunanKitap = bulunanKitaplar[0];
+                bool oduncAlindiMi = kutuphane.KitapOduncAlVeGoster(ilkBulunanKitap.Baslik);
+
+                if (oduncAlindiMi)
+                {
+                    // Kitap ödünç alındıysa bilgileri güncelle
+                    kutuphane.TumKitaplariListele();
+                    Debug.Log($"{ilkBulunanKitap.Baslik} kitabı ödünç alındı.");
+
+                    // Kontrol: Ödünç alınacak kitap kalmadıysa BorrowButton'ı kapat
+                    if (kutuphane.KitapKalmadiMi())
+                    {
+                        // BorrowButton'ı kapat
+                        // (Eğer BorrowButton bir GameObject olarak sahnede varsa setActive kullanılabilir)
+                        Debug.Log("Ödünç alınacak kitap kalmadı. BorrowButton kapatılıyor.");
+                        //borrowBtn.SetActive(false);
+                        notEnoughText.SetActive(true);
+                    }
+                }
+                else
+                {
+                    Debug.Log($"{ilkBulunanKitap.Baslik} kitabının ödünç alınacak yeterli kopyası bulunmamaktadır.");
+                }
+            }
+            else
+            {
+                Debug.Log("Aranan kriterlere uygun kitap bulunamadı.");
+            }
+        }
+        else
+        {
+            Debug.LogError("Kutuphane nesnesi atanmamış. Lütfen Unity Editor'da Kutuphane alanını bağladığınızdan emin olun.");
+        }
+    }
+    
 }
