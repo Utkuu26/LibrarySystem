@@ -15,9 +15,9 @@ public class KutuphaneYonetimi : MonoBehaviour
     void Start()
     {
         // Kitapları ekle
-        Kitap kitap1 = new Kitap { Baslik = "Kitap 1", Yazar = "Yazar 1", ISBN = "111", KopyaSayisi = 5 };
-        Kitap kitap2 = new Kitap { Baslik = "Kitap 2", Yazar = "Yazar 2", ISBN = "222", KopyaSayisi = 3 };
-        Kitap kitap3 = new Kitap { Baslik = "Kitap 3", Yazar = "Yazar 3", ISBN = "333", KopyaSayisi = 2 };
+        Kitap kitap1 = new Kitap { Baslik = "Deniz Kurdu", Yazar = "Jack London", ISBN = "111", KopyaSayisi = 5 };
+        Kitap kitap2 = new Kitap { Baslik = "Simsek Hirsizi", Yazar = "Dogan Elmont", ISBN = "222", KopyaSayisi = 3 };
+        Kitap kitap3 = new Kitap { Baslik = "Budala", Yazar = "Dostoyevski", ISBN = "333", KopyaSayisi = 2 };
 
         // Kütüphane'ye kitapları ekle
         if (kutuphane != null)
@@ -87,7 +87,7 @@ public class KutuphaneYonetimi : MonoBehaviour
                         // (Eğer BorrowButton bir GameObject olarak sahnede varsa setActive kullanılabilir)
                         Debug.Log("Ödünç alınacak kitap kalmadı. BorrowButton kapatılıyor.");
                         //borrowBtn.SetActive(false);
-                        notEnoughText.SetActive(true);
+                        notEnoughText.SetActive(kutuphane.KitapKalmadiMi());
                     }
                 }
                 else

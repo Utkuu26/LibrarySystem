@@ -11,6 +11,12 @@ public class Kutuphane : MonoBehaviour
     public TextMeshProUGUI kitapBilgiHataText;
     public TextMeshProUGUI borrowedBooksText;
 
+    public TMP_InputField kitapIsmiInput;
+    public TMP_InputField yazarIsmiInput;
+    public TMP_InputField isbnInput;
+    public GameObject warningTxt;
+    public GameObject warningTxt2;
+
     void Start()
     {
         kitapBilgiPanel.SetActive(false);
@@ -145,14 +151,56 @@ public class Kutuphane : MonoBehaviour
     }
 
     public bool KitapKalmadiMi()
-{
-    foreach (var kitap in kitaplar)
     {
-        if (kitap.KopyaSayisi > kitap.OduncAlinanKopyalar)
+        foreach (var kitap in kitaplar)
         {
-            return false; // Hala ödünç alınacak kitap var
+            if (kitap.KopyaSayisi > kitap.OduncAlinanKopyalar)
+            {
+                return false; // Hala ödünç alınacak kitap var
+            }
         }
+        return true; // Ödünç alınacak kitap kalmadı
     }
-    return true; // Ödünç alınacak kitap kalmadı
-}
+
+    public void KitapEkleButton()
+    {
+        string kitapIsmi = kitapIsmiInput.text;
+        string yazarIsmi = yazarIsmiInput.text;
+        int isbn;
+
+        // ISBN değerini int'e dönüştürmeye çalış
+        if (!int.TryParse(isbnInput.text, out isbn))
+        {
+            Debug.LogError("ISBN değeri geçerli bir tam sayı değil.");
+            warningTxt.SetActive(true);
+            warningTxt2.SetActive(false);
+            return;
+        }
+
+        // Girişlerin boş olup olmadığını kontrol et
+        if (string.IsNullOrEmpty(kitapIsmi) || string.IsNullOrEmpty(yazarIsmi))
+        {
+            Debug.LogError("Lütfen tüm bilgileri doldurun.");
+            warningTxt2.SetActive(true);
+            warningTxt.SetActive(false);
+            return;
+        }
+
+        // Kitap nesnesini oluştur
+        Kitap yeniKitap = new Kitap
+        {
+            Baslik = kitapIsmi,
+            Yazar = yazarIsmi,
+            ISBN = isbn.ToString(), // ISBN değerini string'e çevir
+            KopyaSayisi = 1 // Yeni kitap eklenirken varsayılan kopya sayısı 1 olarak ayarlandı.
+        };
+
+        // Kitap eklemeyi gerçekleştir
+        KitapEkle(yeniKitap);
+
+        // Giriş alanlarını temizle
+        kitapIsmiInput.text = "";
+        yazarIsmiInput.text = "";
+        isbnInput.text = "";
+    }
 }
